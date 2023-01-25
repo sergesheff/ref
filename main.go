@@ -1,3 +1,4 @@
+//Package ref provides functionality for making references to primitive values
 package ref
 
 import (
@@ -5,16 +6,19 @@ import (
 	"reflect"
 )
 
+// General error messages
 var (
 	NotPointerError           = errors.New("variable should be a pointer to pointer (**variable)")
 	NotAssignedVariablesError = errors.New("variable and value are not assignable to each other")
 )
 
-// MakeRef is saving the pointer to the value to the variable.
-//
-// The Variable parameter should be a pointer to the pointer of the variable (**variable)
-//
-// The Value parameter should be a primitive value (true, 1, 10.00, "string" etc)
+/*
+MakeRef is saving the pointer to the value to the variable.
+
+The Variable parameter should be a pointer to the pointer of the variable (**variable).
+
+The Value parameter should be a primitive value (true, 1, 10.00, "string" etc).
+*/
 func MakeRef(variable interface{}, value interface{}) error {
 
 	_variable := reflect.ValueOf(variable)
