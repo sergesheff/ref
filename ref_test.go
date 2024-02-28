@@ -1,136 +1,116 @@
 package ref
 
 import (
-	"errors"
 	"reflect"
 	"testing"
 )
 
 var tests = []*Tests{
 	&Tests{
-		fn: func() (interface{}, error) {
+		fn: func() interface{} {
 			var v *bool
-			err := MakeRef(v, true)
-			return v, err
-		},
-		expectedValue: nil,
-		expectedErr:   NotPointerError,
-	}, // 1
-	&Tests{
-		fn: func() (interface{}, error) {
-			var v *bool
-			err := MakeRef(&v, true)
-			return v, err
+			v = Ref(true)
+			return v
 		},
 		expectedValue: true,
-		expectedErr:   nil,
+	}, // 1
+	&Tests{
+		fn: func() interface{} {
+			var v bool
+			v = *Ref(true)
+			return v
+		},
+		expectedValue: true,
 	}, // 2
 	&Tests{
-		fn: func() (interface{}, error) {
+		fn: func() interface{} {
 			var v *int
-			err := MakeRef(&v, 10)
-			return v, err
+			v = Ref(10)
+			return v
 		},
 		expectedValue: 10,
-		expectedErr:   nil,
 	}, // 3
 	&Tests{
-		fn: func() (interface{}, error) {
-			var v *int
-			err := MakeRef(&v, 10.00)
-			return v, err
+		fn: func() interface{} {
+			var v int
+			v = *Ref(10)
+			return v
 		},
 		expectedValue: 10,
-		expectedErr:   nil,
 	}, // 4
 	&Tests{
-		fn: func() (interface{}, error) {
-			var v *float32
-			err := MakeRef(&v, 10.00)
-			return v, err
+		fn: func() interface{} {
+			var v *float64
+			v = Ref(10.00)
+			return v
 		},
-		expectedValue: float32(10),
-		expectedErr:   nil,
+		expectedValue: float64(10),
 	}, // 5
 	&Tests{
-		fn: func() (interface{}, error) {
-			var v *float32
-			err := MakeRef(&v, 10)
-			return v, err
+		fn: func() interface{} {
+			var v float64
+			v = *Ref(10.00)
+			return v
 		},
-		expectedValue: float32(10),
-		expectedErr:   nil,
+		expectedValue: float64(10),
 	}, // 6
 	&Tests{
-		fn: func() (interface{}, error) {
-			var v *float32
-			err := MakeRef(&v, "10")
-			return v, err
-		},
-		expectedValue: float32(0),
-		expectedErr:   NotAssignedVariablesError,
-	}, // 78
-	&Tests{
-		fn: func() (interface{}, error) {
+		fn: func() interface{} {
 			var v *string
-			err := MakeRef(&v, 65)
-			return v, err
+			v = Ref("A")
+			return v
 		},
 		expectedValue: "A",
-		expectedErr:   nil,
+	}, // 7
+	&Tests{
+		fn: func() interface{} {
+			var v string
+			v = *Ref("A")
+			return v
+		},
+		expectedValue: "A",
 	}, // 8
 	&Tests{
-		fn: func() (interface{}, error) {
-			var v *string
-			err := MakeRef(&v, 10.5)
-			return v, err
-		},
-		expectedValue: "",
-		expectedErr:   NotAssignedVariablesError,
-	}, // 9
-	&Tests{
-		fn: func() (interface{}, error) {
-			var v *string
-			err := MakeRef(&v, "test")
-			return v, err
-		},
-		expectedValue: "test",
-		expectedErr:   nil,
-	}, // 10
-	&Tests{
-		fn: func() (interface{}, error) {
+		fn: func() interface{} {
 			var v *CustomType
-			err := MakeRef(&v, CustomTypeTest)
-			return v, err
+			v = Ref(CustomTypeTest)
+			return v
 		},
 		expectedValue: CustomTypeTest,
-		expectedErr:   nil,
-	}, // 11
+	}, // 9
+	&Tests{
+		fn: func() interface{} {
+			var v CustomType
+			v = *Ref(CustomTypeTest)
+			return v
+		},
+		expectedValue: CustomTypeTest,
+	}, //10
 }
 
 func TestInt(t *testing.T) {
 
 	for i, test := range tests {
-		res, err := test.fn()
+		res := test.fn()
 
 		t.Logf("test #%d \n", i+1)
 
 		var tmpVal interface{} = nil
 		v := reflect.ValueOf(res)
 		if !v.IsZero() {
-			tmpVal = v.Elem().Interface()
-		}
 
-		t.Logf("Expected error: %v; Received error: %v \n", test.expectedErr, err)
-		t.Logf("Expected value: %v; Received value: %v \n", test.expectedValue, tmpVal)
-
-		if !errors.Is(err, test.expectedErr) {
-
-			if tmpVal != test.expectedValue {
-				t.Error(`FAIL`)
-				continue
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
 			}
 
+			tmpVal = v.Interface()
+		}
+
+		t.Logf("Expected value: %v; Received value: %v \n", test.expectedValue, tmpVal)
+
+		if tmpVal != test.expectedValue {
+			t.Error(`FAIL`)
+			continue
 		}
 
 		t.Log("OK")
@@ -138,9 +118,8 @@ func TestInt(t *testing.T) {
 }
 
 type Tests struct {
-	fn            func() (val interface{}, err error)
+	fn            func() (val interface{})
 	expectedValue interface{}
-	expectedErr   error
 }
 
 type CustomType string
